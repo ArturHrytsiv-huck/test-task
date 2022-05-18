@@ -3,12 +3,28 @@
 
 #include "ShooterCharacter.h"
 
-// Sets default values
-AShooterCharacter::AShooterCharacter()
-{
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+#include "GameFramework/SpringArmComponent.h"
 
+AShooterCharacter::AShooterCharacter() :
+	BaseTurnRate(45.f),
+	BaseLookUpRate(45.f)
+	// // Mouse look sensitivity scale factors
+	// MouseHipTurnRate(1.f),
+	// MouseHipLookUpRate(1.f)
+{
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+	// Create a camera boom (pulls in towards tha character if there is a collision)
+	CameraBoom  = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->TargetArmLength = 180.f; // The camera follows at this distance behind the character
+	CameraBoom->bUsePawnControlRotation = true; // rotate the arm based on the controller
+	CameraBoom->SocketOffset = FVector(0.f, 50.f, 70.f);
+	// Create a Follow Camera
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach camera to end of CameraBoom
+	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	
 }
 
 // Called when the game starts or when spawned
@@ -18,7 +34,9 @@ void AShooterCharacter::BeginPlay()
 	
 }
 
+
 // Called every frame
+
 void AShooterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -30,5 +48,60 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	check(PlayerInputComponent);
+	PlayerInputComponent->BindAxis("MoveForward", this, &AShooterCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &AShooterCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("LookUpRate", this, &AShooterCharacter::LookUpRate);
+	PlayerInputComponent->BindAxis("TurnRate", this, &AShooterCharacter::TurnRate);
+	// PlayerInputComponent->BindAxis("Turn", this, &AShooterCharacter::Turn);
+	// PlayerInputComponent->BindAxis("LookUp", this, &AShooterCharacter::LookUp);
 }
 
+void AShooterCharacter::MoveForward(float Value)
+{
+	if ((Controller != nullptr) && (Value != 0.f))
+	{
+		// find out which way is forward
+		const FRotator Rotation{ Controller->GetControlRotation() };
+		const FRotator YawRotation{ 0, Rotation.Yaw, 0};
+
+		const FVector Direction{ FRotationMatrix{YawRotation}.GetUnitAxis(EAxis::X) };
+		AddMovementInput(Direction, Value);
+	}
+}
+ 
+void AShooterCharacter::MoveRight(float Value)
+{
+	if ((Controller != nullptr) && (Value != 0.f))
+	{
+		// find out which way is right
+		const FRotator Rotation{ Controller->GetControlRotation() };
+		const FRotator YawRotation{ 0, Rotation.Yaw, 0};
+
+		const FVector Direction{ FRotationMatrix{YawRotation}.GetUnitAxis(EAxis::Y) };
+		AddMovementInput(Direction, Value);
+	}
+}
+
+void AShooterCharacter::TurnRate(float Rate)
+{
+	// calculate delta for this frame from the rate information
+	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds()); // deg/sec * sec/frame
+}
+
+void AShooterCharacter::LookUpRate(float Rate)
+{
+	// calculate delta for this frame from the rate information
+	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds()); // deg/sec * sec/frame
+
+}
+
+// void AShooterCharacter::Turn(float Value)
+// {
+// 	AddControllerYawInput(Value * MouseHipTurnRate);
+// }
+//
+// void AShooterCharacter::LookUp(float Value)
+// {
+// 	AddControllerPitchInput(Value * MouseHipLookUpRate);
+// }
