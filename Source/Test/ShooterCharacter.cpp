@@ -3,14 +3,14 @@
 
 #include "ShooterCharacter.h"
 
+#include "Bullet.h"
+#include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 AShooterCharacter::AShooterCharacter() :
 	BaseTurnRate(45.f),
 	BaseLookUpRate(45.f)
-	// // Mouse look sensitivity scale factors
-	// MouseHipTurnRate(1.f),
-	// MouseHipLookUpRate(1.f)
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -49,12 +49,13 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	check(PlayerInputComponent);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("FireButton", IE_Pressed, this, &AShooterCharacter::FireWeapon);
+
 	PlayerInputComponent->BindAxis("MoveForward", this, &AShooterCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AShooterCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AShooterCharacter::LookUpRate);
 	PlayerInputComponent->BindAxis("TurnRate", this, &AShooterCharacter::TurnRate);
-	// PlayerInputComponent->BindAxis("Turn", this, &AShooterCharacter::Turn);
-	// PlayerInputComponent->BindAxis("LookUp", this, &AShooterCharacter::LookUp);
 }
 
 void AShooterCharacter::MoveForward(float Value)
@@ -96,12 +97,17 @@ void AShooterCharacter::LookUpRate(float Rate)
 
 }
 
-// void AShooterCharacter::Turn(float Value)
-// {
-// 	AddControllerYawInput(Value * MouseHipTurnRate);
-// }
-//
-// void AShooterCharacter::LookUp(float Value)
-// {
-// 	AddControllerPitchInput(Value * MouseHipLookUpRate);
-// }
+void AShooterCharacter::FireWeapon()
+{
+	const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
+	if (BarrelSocket)
+	{
+		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
+		FActorSpawnParameters SpawnParams;
+		if (BulletClass)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Shoot"));
+		}
+		GetWorld()->SpawnActor<ABullet>(BulletClass, SocketTransform.GetLocation(), SocketTransform.Rotator());
+	}
+}

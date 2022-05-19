@@ -16,6 +16,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateAnimationProperties(float DeltaTime);
 
+	virtual void NativeInitializeAnimation() override;
 private:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))

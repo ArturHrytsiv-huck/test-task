@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Bullet.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
 #include "ShooterCharacter.generated.h"
@@ -28,6 +29,7 @@ protected:
 	
 	/** Called for forwards/backwards input */
 	void MoveForward(float Value);
+
 	/** Call for side to side input */
 	void MoveRight(float Value);
 
@@ -35,18 +37,8 @@ protected:
 
 	void LookUpRate(float Rate);
 
-	// /**
-	// * Rotate controller based on mouse X movement
-	// * @param Value The input from mouse movement
-	// */
-	// void Turn(float Value);
-	// /**
-	// * Rotate controller based on mouse Y movement
-	// * @param Value The input from mouse movement
-	// */
-	// void LookUp(float Value);
-
-	
+	/** Called when thee fire button is pressed */
+	void FireWeapon();
 private:
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -63,12 +55,9 @@ private:
 	/** Base look up/down, in deg/sec. Other scaling may affect final turn rate */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	float BaseLookUpRate;
-	
-	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
-	// float MouseHipTurnRate;
-	//
-	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
-	// float MouseHipLookUpRate;
 
+	/** Projectile class to spawn */
+	UPROPERTY(EditDefaultsOnly, Category = "Bullet")
+	TSubclassOf<ABullet> BulletClass;
 public:	
 };

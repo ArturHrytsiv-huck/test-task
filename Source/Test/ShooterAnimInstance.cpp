@@ -31,3 +31,10 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 		}
 	}
 }
+
+void UShooterAnimInstance::NativeInitializeAnimation()
+{
+	Super::NativeInitializeAnimation();
+	ShooterCharacter = Cast<AShooterCharacter>(TryGetPawnOwner());
+	
+}
