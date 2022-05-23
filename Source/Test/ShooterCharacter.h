@@ -59,5 +59,8 @@ private:
 	/** Projectile class to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "Bullet")
 	TSubclassOf<ABullet> BulletClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Bullet")
+	USoundWave* ShootingSound;
 public:	
 };

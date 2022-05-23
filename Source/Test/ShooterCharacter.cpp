@@ -103,10 +103,9 @@ void AShooterCharacter::FireWeapon()
 	if (BarrelSocket)
 	{
 		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
-		FActorSpawnParameters SpawnParams;
-		if (BulletClass)
+		if (ShootingSound)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Shoot"));
+			UGameplayStatics::PlaySoundAtLocation(this, ShootingSound, SocketTransform.GetLocation());
 		}
 		GetWorld()->SpawnActor<ABullet>(BulletClass, SocketTransform.GetLocation(), SocketTransform.Rotator());
 	}

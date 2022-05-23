@@ -3,11 +3,24 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Engine/DataTable.h"
 #include "Bullet.generated.h"
+
+
+USTRUCT(BlueprintType)
+struct FHitInteractionRules : public FTableRowBase
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere)
+	UClass* CollidedComponent;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UActorComponent> ComponentToInteract;
+};
 
 UCLASS(config=Game)
 class TEST_API ABullet : public AActor
@@ -17,29 +30,6 @@ class TEST_API ABullet : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ABullet();
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION()
-void OnSphereOverlap(
-	UPrimitiveComponent* OverlappedComponent,
-	AActor* OtherActor,
-	UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex,
-	bool bFromSweep,
-	const FHitResult& SweepResult);
-
-	UFUNCTION()
-	void OnSphereEndOverlap(
-		UPrimitiveComponent* OverlappedComponent,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComponent,
-		int32 OtherBodyIndex);
 
 private:
 	/** Bullet Mesh */
@@ -60,6 +50,9 @@ private:
 	/** Projectile movement component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	UProjectileMovementComponent* ProjectileMovement;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet", meta = (AllowPrivateAccess = "true"))
+	UDataTable* HitInteractionRules;
 public:
 	/** called when projectile hits something */
 	UFUNCTION()

@@ -12,8 +12,6 @@ ABullet::ABullet() :
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->SetCollisionProfileName("Projectile");
 	CollisionComp->OnComponentHit.AddDynamic(this, &ABullet::OnHit);		// set up a notification for when this component hits something blocking
-	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ABullet::OnSphereOverlap);
-	CollisionComp->OnComponentEndOverlap.AddDynamic(this, &ABullet::OnSphereEndOverlap);
 	
 	// Players can't walk on it
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
@@ -42,41 +40,21 @@ ABullet::ABullet() :
 	InitialLifeSpan = 10.0f;
 }
 
-// Called when the game starts or when spawned
-void ABullet::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void ABullet::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
-void ABullet::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	UE_LOG(LogTemp,Warning,TEXT("BOOOOM"));
-
-}
-
-void ABullet::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex)
-{
-	UE_LOG(LogTemp,Warning,TEXT("BOOOOM"));
-
-}
-
 void ABullet::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	// Only add impulse and destroy projectile if we hit a physics
-	// if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
-	// {
-	OtherComp->AddImpulseAtLocation(GetVelocity() * 1000.0f, GetActorLocation());
-	UE_LOG(LogTemp,Warning,TEXT("BOOOOM"));
+	if (OtherActor)
+	{
+		TArray<FName> RowNames = HitInteractionRules->GetRowNames();
+		for (FName RowIndex : RowNames)
+		{
+			const FString ContextText;
+			FHitInteractionRules* Row = HitInteractionRules->FindRow<FHitInteractionRules>(RowIndex, ContextText, true);
+			if (Row && Row->CollidedComponent->GetName().Contains(OtherActor->GetClass()->GetName()))
+			{
+				FTransform Transform;
+				OtherActor->AddComponentByClass(Row->ComponentToInteract, true, Transform, false);
+			}
+		}
+	}
 	Destroy();
-	// }
 }
