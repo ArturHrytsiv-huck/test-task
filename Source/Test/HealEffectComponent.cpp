@@ -12,7 +12,7 @@ UHealEffectComponent::UHealEffectComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-	const auto HealEffectObject = ConstructorHelpers::FObjectFinder<UParticleSystem>(TEXT("ParticleSystem'/Game/Game/DataTable/P_Revenant_Mark_Trail.P_Revenant_Mark_Trail'"));
+	const auto HealEffectObject = ConstructorHelpers::FObjectFinder<UParticleSystem>(TEXT("ParticleSystem'/Game/Game/VFX/P_Revenant_Primary_MuzzleFlash.P_Revenant_Primary_MuzzleFlash'"));
 	
 	if (HealEffectObject.Object)
 	{

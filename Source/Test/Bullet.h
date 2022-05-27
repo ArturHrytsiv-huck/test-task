@@ -22,6 +22,7 @@ struct FHitInteractionRules : public FTableRowBase
 	TSubclassOf<UActorComponent> ComponentToInteract;
 };
 
+
 UCLASS(config=Game)
 class TEST_API ABullet : public AActor
 {
@@ -30,6 +31,8 @@ class TEST_API ABullet : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ABullet();
+
+	DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnBulletHitDelegate, const AActor*, OtherActor,	const UClass*, ActorEffectComponent);
 
 private:
 	/** Bullet Mesh */
@@ -42,24 +45,38 @@ private:
 	/** Sphere collision component */
 	UPROPERTY(EditAnywhere, Category = "Bullet")
 	USphereComponent* CollisionComp;
-
-	/** Scale of collision Box */
-	UPROPERTY(EditAnywhere, Category = "Bullet")
-	FVector CollisionSphereScale;
 	
 	/** Projectile movement component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-	UProjectileMovementComponent* ProjectileMovement;
+	UProjectileMovementComponent* BulletMovement;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullet", meta = (AllowPrivateAccess = "true"))
 	UDataTable* HitInteractionRules;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Bullet", meta = (AllowPrivateAccess = "true"))
+	bool bDestroyOnHit;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Bullet", meta = (AllowPrivateAccess = "true"))
+	bool bAffectMultipleActors;
+
+	UPROPERTY(EditAnywhere, Category = "Bullet", meta = (AllowPrivateAccess = "true"))
+	float AoESphereRadius;
+
+	UPROPERTY(EditAnywhere, Category = "Bullet", meta = (AllowPrivateAccess = "true"))
+	int InteractionAoEActorsCount;
+
+	FOnBulletHitDelegate OnBulletHitDelegate;
 public:
-	/** called when projectile hits something */
+	/** Called when projectile hits something */
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
+	
 	/** Returns CollisionComp subobject **/
 	USphereComponent* GetCollisionComp() const { return CollisionComp; }
+	
 	/** Returns ProjectileMovement subobject **/
-	UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
+	UProjectileMovementComponent* GetBulletMovement() const { return BulletMovement; }
+
+	void SetAoEDamage();
+	
 };

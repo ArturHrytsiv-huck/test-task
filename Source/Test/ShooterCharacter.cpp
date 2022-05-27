@@ -10,7 +10,9 @@
 
 AShooterCharacter::AShooterCharacter() :
 	BaseTurnRate(45.f),
-	BaseLookUpRate(45.f)
+	BaseLookUpRate(45.f),
+	// Fire variables
+	bShouldFire(true)
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -50,7 +52,9 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("FireButton", IE_Pressed, this, &AShooterCharacter::FireWeapon);
+	
+	PlayerInputComponent->BindAction("FireButton", IE_Pressed, this, &AShooterCharacter::FireButtonPressed);
+	PlayerInputComponent->BindAction("FireButton", IE_Released, this, &AShooterCharacter::FireButtonReleased);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AShooterCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AShooterCharacter::MoveRight);
@@ -108,5 +112,51 @@ void AShooterCharacter::FireWeapon()
 			UGameplayStatics::PlaySoundAtLocation(this, ShootingSound, SocketTransform.GetLocation());
 		}
 		GetWorld()->SpawnActor<ABullet>(BulletClass, SocketTransform.GetLocation(), SocketTransform.Rotator());
+	}
+}
+void AShooterCharacter::FireButtonPressed_Implementation()
+{
+	bFireButtonPressed = true;
+	StartFireTimer();
+}
+
+void AShooterCharacter::FireButtonReleased_Implementation()
+{
+	bFireButtonPressed = false;
+}
+
+void AShooterCharacter::StartFireTimer_Implementation()
+{
+	if (bShouldFire)
+	{
+		FireWeapon();
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, FString::Printf(TEXT("Wait for - %f seconds"), AutomaticFireRate));
+		}
+		bShouldFire = false;
+		GetWorldTimerManager().SetTimer(
+			AutoFireTimer,
+			this,
+			&AShooterCharacter::AutoFireReset,
+			AutomaticFireRate);
+	}
+	else
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, FString::Printf(TEXT("Remains %f seconds"), GetWorldTimerManager().GetTimerRemaining(AutoFireTimer)));
+		}
+		
+	}
+}
+
+
+void AShooterCharacter::AutoFireReset_Implementation()
+{
+	bShouldFire = true;
+	if (bFireButtonPressed)
+	{
+		StartFireTimer();
 	}
 }

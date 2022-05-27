@@ -39,6 +39,19 @@ protected:
 
 	/** Called when thee fire button is pressed */
 	void FireWeapon();
+
+	UFUNCTION(Server, Reliable)
+	void FireButtonPressed();
+
+	UFUNCTION(Server, Reliable)
+	void FireButtonReleased();
+
+	UFUNCTION(Server, Reliable)
+	void StartFireTimer();
+	
+	UFUNCTION(Server, Reliable)
+	void AutoFireReset();
+	
 private:
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -57,10 +70,21 @@ private:
 	float BaseLookUpRate;
 
 	/** Projectile class to spawn */
-	UPROPERTY(EditDefaultsOnly, Category = "Bullet")
+	UPROPERTY(EditDefaultsOnly, Category = "Bullet", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<ABullet> BulletClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Bullet")
+	UPROPERTY(EditDefaultsOnly, Category = "Bullet", meta = (AllowPrivateAccess = "true"))
 	USoundWave* ShootingSound;
-public:	
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Bullet", meta = (AllowPrivateAccess = "true"))
+	bool bFireButtonPressed;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Bullet", meta = (AllowPrivateAccess = "true"))
+	bool bShouldFire;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Bullet", meta = (AllowPrivateAccess = "true"))
+	FTimerHandle AutoFireTimer;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Bullet", meta = (AllowPrivateAccess = "true"))
+	float AutomaticFireRate = 1;
 };
